@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi Mochila de Tareas 🎒</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F5F0FF;
+    --surface: #FFFFFF;
+    --surface2: #F0EBFF;
+    --purple: #7C3AED;
+    --purple-light: #EDE9FE;
+    --purple-dark: #5B21B6;
+    --teal: #0D9488;
+    --teal-light: #CCFBF1;
+    --amber: #D97706;
+    --amber-light: #FEF3C7;
+    --red: #DC2626;
+    --red-light: #FEE2E2;
+    --green: #16A34A;
+    --green-light: #DCFCE7;
+    --text: #1E1B4B;
+    --text2: #6B7280;
+    --border: #DDD6FE;
+    --radius: 16px;
+    --shadow: 0 4px 20px rgba(124,58,237,0.10);
+  }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    color: var(--text);
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--purple);
+    padding: 1.25rem 1.5rem 1rem;
+    position: sticky; top: 0; z-index: 50;
+    box-shadow: 0 4px 24px rgba(91,33,182,0.18);
+  }
+  .header-inner {
+    max-width: 600px; margin: 0 auto;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .logo-circle {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: rgba(255,255,255,0.2);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; flex-shrink: 0;
+  }
+  .header-title { color: #fff; font-size: 20px; font-weight: 900; line-height: 1.1; }
+  .header-sub { color: rgba(255,255,255,0.75); font-size: 13px; font-weight: 600; }
+  .new-btn {
+    margin-left: auto;
+    background: #fff; color: var(--purple-dark);
+    border: none; border-radius: 12px;
+    padding: 10px 16px; font-size: 14px; font-weight: 800;
+    cursor: pointer; display: flex; align-items: center; gap: 6px;
+    font-family: 'Nunito', sans-serif;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    transition: transform .15s, box-shadow .15s;
+    white-space: nowrap;
+  }
+  .new-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.15); }
+  .new-btn:active { transform: scale(0.97); }
+  .new-btn svg { width: 18px; height: 18px; }
+
+  /* STATS */
+  .stats-wrap { max-width: 600px; margin: 0 auto; padding: 1.25rem 1rem 0; }
+  .stats-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+  .stat {
+    background: var(--surface); border-radius: var(--radius);
+    padding: 14px 12px; text-align: center;
+    box-shadow: var(--shadow); border: 1.5px solid var(--border);
+  }
+  .stat-n { font-size: 28px; font-weight: 900; color: var(--purple); line-height: 1; }
+  .stat-l { font-size: 12px; font-weight: 700; color: var(--text2); margin-top: 3px; }
+
+  /* FILTERS */
+  .filters-wrap { max-width: 600px; margin: 0 auto; padding: 1rem 1rem 0; }
+  .filters { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; }
+  .filters::-webkit-scrollbar { display: none; }
+  .fbtn {
+    flex-shrink: 0; padding: 8px 16px; border-radius: 99px;
+    border: 2px solid var(--border); background: var(--surface);
+    font-size: 13px; font-weight: 700; color: var(--text2);
+    cursor: pointer; font-family: 'Nunito', sans-serif;
+    transition: all .15s; display: flex; align-items: center; gap: 5px;
+  }
+  .fbtn:hover { border-color: var(--purple); color: var(--purple); background: var(--purple-light); }
+  .fbtn.active { background: var(--purple); color: #fff; border-color: var(--purple); }
+
+  /* TASK LIST */
+  .tasks-wrap { max-width: 600px; margin: 0 auto; padding: 1rem; display: flex; flex-direction: column; gap: 12px; }
+
+  .empty-state {
+    text-align: center; padding: 3rem 1rem;
+    background: var(--surface); border-radius: var(--radius);
+    border: 2px dashed var(--border);
+  }
+  .empty-icon { font-size: 56px; display: block; margin-bottom: 12px; }
+  .empty-title { font-size: 18px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+  .empty-sub { font-size: 14px; color: var(--text2); font-weight: 600; }
+
+  /* TASK CARD */
+  .task-card {
+    background: var(--surface); border-radius: var(--radius);
+    border: 2px solid var(--border);
+    padding: 1rem 1rem 0.85rem;
+    box-shadow: var(--shadow);
+    transition: transform .15s, box-shadow .15s;
+    animation: slideIn .25s ease;
+  }
+  @keyframes slideIn { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform: translateY(0); } }
+  .task-card:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(124,58,237,0.13); }
+  .task-card.done { opacity: 0.6; }
+  .task-card.alert-card { border-color: #FCA5A5; background: #FFFBFB; }
+
+  .card-top { display: flex; align-items: flex-start; gap: 10px; }
+  .check-wrap { padding-top: 2px; }
+  .check {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 2.5px solid var(--border); background: transparent;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all .18s; flex-shrink: 0;
+  }
+  .check:hover { border-color: var(--teal); background: var(--teal-light); }
+  .check.checked { background: var(--teal); border-color: var(--teal); }
+  .check svg { width: 14px; height: 14px; stroke: #fff; display: none; }
+  .check.checked svg { display: block; }
+
+  .card-body { flex: 1; min-width: 0; }
+  .card-title {
+    font-size: 16px; font-weight: 800; color: var(--text);
+    line-height: 1.3;
+  }
+  .task-card.done .card-title { text-decoration: line-through; color: var(--text2); }
+  .card-desc { font-size: 13px; color: var(--text2); font-weight: 600; margin-top: 3px; line-height: 1.5; }
+
+  .card-actions { display: flex; gap: 6px; flex-shrink: 0; }
+  .act-btn {
+    width: 34px; height: 34px; border-radius: 10px;
+    border: 1.5px solid var(--border); background: transparent;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: all .15s; color: var(--text2);
+  }
+  .act-btn svg { width: 17px; height: 17px; }
+  .act-btn:hover { background: var(--purple-light); border-color: var(--purple); color: var(--purple); }
+  .act-btn.del:hover { background: var(--red-light); border-color: var(--red); color: var(--red); }
+
+  .card-meta { display: flex; align-items: center; gap: 7px; margin-top: 10px; flex-wrap: wrap; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 99px;
+  }
+  .badge svg { width: 13px; height: 13px; flex-shrink: 0; }
+  .b-materia { background: var(--purple-light); color: var(--purple-dark); }
+  .b-date { background: var(--amber-light); color: var(--amber); }
+  .b-alert { background: var(--red-light); color: var(--red); }
+  .b-done { background: var(--teal-light); color: var(--teal); }
+  .b-ok { background: var(--green-light); color: var(--green); }
+
+  /* DONE BANNER */
+  .done-btn-wrap { margin-top: 10px; }
+  .done-confirm-btn {
+    width: 100%; padding: 9px; border-radius: 10px;
+    background: var(--teal-light); border: 2px dashed var(--teal);
+    color: var(--teal); font-size: 14px; font-weight: 800;
+    cursor: pointer; font-family: 'Nunito', sans-serif;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    transition: background .15s;
+  }
+  .done-confirm-btn:hover { background: #99f6e4; }
+
+  /* MODAL OVERLAY */
+  .overlay {
+    position: fixed; inset: 0; z-index: 100;
+    background: rgba(30,27,75,0.55);
+    display: flex; align-items: center; justify-content: center;
+    padding: 1rem;
+    opacity: 0; pointer-events: none; transition: opacity .2s;
+  }
+  .overlay.open { opacity: 1; pointer-events: all; }
+
+  .modal {
+    background: var(--surface); border-radius: 24px;
+    width: 100%; max-width: 420px;
+    padding: 1.5rem;
+    box-shadow: 0 20px 60px rgba(91,33,182,0.25);
+    transform: translateY(20px) scale(0.97);
+    transition: transform .22s ease;
+    max-height: 90vh; overflow-y: auto;
+  }
+  .overlay.open .modal { transform: translateY(0) scale(1); }
+
+  .modal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem; }
+  .modal-title { font-size: 20px; font-weight: 900; color: var(--text); }
+  .close-btn {
+    width: 34px; height: 34px; border-radius: 10px;
+    border: 1.5px solid var(--border); background: transparent;
+    cursor: pointer; font-size: 18px; color: var(--text2);
+    display: flex; align-items: center; justify-content: center;
+    transition: all .15s;
+  }
+  .close-btn:hover { background: var(--red-light); color: var(--red); border-color: var(--red); }
+
+  .field { margin-bottom: 1rem; }
+  .field label {
+    display: block; font-size: 13px; font-weight: 800;
+    color: var(--text2); margin-bottom: 6px;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .field label svg { width: 15px; height: 15px; }
+  .field input, .field select, .field textarea {
+    width: 100%; padding: 11px 14px;
+    border: 2px solid var(--border); border-radius: 12px;
+    font-size: 15px; font-family: 'Nunito', sans-serif;
+    font-weight: 600; color: var(--text);
+    background: var(--bg); outline: none;
+    transition: border-color .15s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    border-color: var(--purple); background: #fff;
+  }
+  .field textarea { resize: none; height: 75px; line-height: 1.5; }
+  .field select { cursor: pointer; }
+
+  .modal-footer { display: flex; gap: 10px; margin-top: 1.25rem; }
+  .btn-cancel {
+    flex: 1; padding: 12px; border-radius: 12px;
+    border: 2px solid var(--border); background: transparent;
+    font-size: 15px; font-weight: 800; color: var(--text2);
+    cursor: pointer; font-family: 'Nunito', sans-serif;
+    transition: all .15s;
+  }
+  .btn-cancel:hover { background: var(--surface2); }
+  .btn-save {
+    flex: 2; padding: 12px; border-radius: 12px;
+    border: none; background: var(--purple);
+    font-size: 15px; font-weight: 900; color: #fff;
+    cursor: pointer; font-family: 'Nunito', sans-serif;
+    transition: all .15s; box-shadow: 0 4px 14px rgba(124,58,237,0.35);
+  }
+  .btn-save:hover { background: var(--purple-dark); transform: translateY(-1px); }
+  .btn-save:active { transform: scale(0.98); }
+
+  /* ERROR */
+  .field-error { font-size: 12px; font-weight: 700; color: var(--red); margin-top: 4px; display: none; }
+  .field.has-error input, .field.has-error select, .field.has-error textarea {
+    border-color: var(--red);
+  }
+  .field.has-error .field-error { display: block; }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--text); color: #fff; border-radius: 99px;
+    padding: 10px 20px; font-size: 14px; font-weight: 700;
+    z-index: 200; transition: transform .25s ease;
+    display: flex; align-items: center; gap: 7px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast svg { width: 16px; height: 16px; }
+
+  /* ALERT WARNING PULSE */
+  @keyframes pulse-border { 0%,100% { border-color: #FCA5A5; } 50% { border-color: var(--red); } }
+  .task-card.alert-card { animation: slideIn .25s ease, pulse-border 2s ease infinite; }
+
+  @media (max-width: 480px) {
+    .header-title { font-size: 17px; }
+    .new-btn span { display: none; }
+    .stat-n { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="header-inner">
+    <div class="logo-circle">🎒</div>
+    <div>
+      <div class="header-title">Mi Mochila de Tareas</div>
+      <div class="header-sub">¡Organiza tus tareas del colegio!</div>
+    </div>
+    <button class="new-btn" onclick="openModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span>Nueva tarea</span>
+    </button>
+  </div>
+</header>
+
+<!-- STATS -->
+<div class="stats-wrap">
+  <div class="stats-grid">
+    <div class="stat">
+      <div class="stat-n" id="s-total">0</div>
+      <div class="stat-l">📚 Total</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n" id="s-pend" style="color:var(--amber)">0</div>
+      <div class="stat-l">⏳ Pendientes</div>
+    </div>
+    <div class="stat">
+      <div class="stat-n" id="s-done" style="color:var(--teal)">0</div>
+      <div class="stat-l">✅ Listas</div>
+    </div>
+  </div>
+</div>
+
+<!-- FILTERS -->
+<div class="filters-wrap">
+  <div class="filters">
+    <button class="fbtn active" onclick="setFilter('todas',this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      Todas
+    </button>
+    <button class="fbtn" onclick="setFilter('pendientes',this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Pendientes
+    </button>
+    <button class="fbtn" onclick="setFilter('listas',this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+      Listas
+    </button>
+    <button class="fbtn" onclick="setFilter('urgentes',this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      ¡Urgentes!
+    </button>
+  </div>
+</div>
+
+<!-- TASK LIST -->
+<div class="tasks-wrap" id="task-list"></div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="bgClose(event)">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modal-h">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-h">Nueva tarea</div>
+      <button class="close-btn" onclick="closeModal()" aria-label="Cerrar">✕</button>
+    </div>
+
+    <div class="field" id="f-titulo">
+      <label>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Título de la tarea
+      </label>
+      <input type="text" id="inp-titulo" placeholder="Ej: Ejercicios de multiplicación" maxlength="80">
+      <div class="field-error">¡Escribe el título de la tarea!</div>
+    </div>
+
+    <div class="field" id="f-materia">
+      <label>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Materia
+      </label>
+      <select id="inp-materia">
+        <option value="">— Elige la materia —</option>
+        <option>📐 Matemáticas</option>
+        <option>📖 Español</option>
+        <option>🌿 Ciencias Naturales</option>
+        <option>🌎 Ciencias Sociales</option>
+        <option>🇬🇧 Inglés</option>
+        <option>⚽ Educación Física</option>
+        <option>🎨 Arte</option>
+        <option>🎵 Música</option>
+        <option>💻 Tecnología</option>
+        <option>🙏 Religión</option>
+        <option>📝 Otra</option>
+      </select>
+      <div class="field-error">¡Elige la materia!</div>
+    </div>
+
+    <div class="field">
+      <label>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="17" y1="10" x2="3" y2="10"/><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="14" x2="3" y2="14"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+        Descripción (opcional)
+      </label>
+      <textarea id="inp-desc" placeholder="¿Qué hay que hacer? Puedes escribir detalles aquí..."></textarea>
+    </div>
+
+    <div class="field" id="f-fecha">
+      <label>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        Fecha de entrega
+      </label>
+      <input type="date" id="inp-fecha">
+      <div class="field-error">¡Pon la fecha de entrega!</div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-save" onclick="saveTask()">💾 Guardar tarea</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toast-msg">¡Guardado!</span>
+</div>
+
+<script>
+  let tasks = JSON.parse(localStorage.getItem('mochila_v2') || '[]');
+  let filter = 'todas';
+  let editId = null;
+
+  function save() { localStorage.setItem('mochila_v2', JSON.stringify(tasks)); }
+
+  function daysDiff(d) {
+    const hoy = new Date(); hoy.setHours(0,0,0,0);
+    const entrega = new Date(d + 'T00:00:00');
+    return Math.round((entrega - hoy) / 86400000);
+  }
+
+  function isUrgente(t) {
+    return !t.done && t.fecha && daysDiff(t.fecha) <= 3;
+  }
+
+  function fechaBadge(t) {
+    if (t.done) return `<span class="badge b-done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>¡Lista!</span>`;
+    if (!t.fecha) return '';
+    const d = daysDiff(t.fecha);
+    const label = new Date(t.fecha + 'T00:00:00').toLocaleDateString('es-CO', {day:'numeric', month:'short'});
+    if (d < 0) return `<span class="badge b-alert">⚠️ ¡Venció!</span>`;
+    if (d === 0) return `<span class="badge b-alert">🔔 ¡Hoy!</span>`;
+    if (d === 1) return `<span class="badge b-alert">🔔 ¡Mañana!</span>`;
+    if (d <= 3) return `<span class="badge b-alert">🔔 En ${d} días</span>`;
+    return `<span class="badge b-date">📅 ${label}</span>`;
+  }
+
+  function render() {
+    let visible = [...tasks];
+    if (filter === 'pendientes') visible = tasks.filter(t => !t.done);
+    if (filter === 'listas') visible = tasks.filter(t => t.done);
+    if (filter === 'urgentes') visible = tasks.filter(t => isUrgente(t));
+
+    document.getElementById('s-total').textContent = tasks.length;
+    document.getElementById('s-pend').textContent = tasks.filter(t => !t.done).length;
+    document.getElementById('s-done').textContent = tasks.filter(t => t.done).length;
+
+    const list = document.getElementById('task-list');
+
+    if (!visible.length) {
+      const msgs = {
+        todas: { icon: '🎒', t: '¡Tu mochila está vacía!', s: 'Toca "Nueva tarea" para agregar tu primera tarea.' },
+        pendientes: { icon: '🎉', t: '¡No hay tareas pendientes!', s: 'Todo al día, ¡excelente!' },
+        listas: { icon: '📭', t: 'Aún no has completado tareas', s: 'Completa tareas tocando el círculo.' },
+        urgentes: { icon: '😌', t: '¡No hay tareas urgentes!', s: 'Estás muy organizado.' },
+      };
+      const m = msgs[filter];
+      list.innerHTML = `<div class="empty-state"><span class="empty-icon">${m.icon}</span><div class="empty-title">${m.t}</div><div class="empty-sub">${m.s}</div></div>`;
+      return;
+    }
+
+    list.innerHTML = visible.map(t => {
+      const urgente = isUrgente(t);
+      return `
+      <div class="task-card${t.done ? ' done' : ''}${urgente ? ' alert-card' : ''}" id="card-${t.id}">
+        <div class="card-top">
+          <div class="check-wrap">
+            <button class="check${t.done ? ' checked' : ''}" onclick="toggleDone('${t.id}')" title="${t.done ? 'Marcar como pendiente' : 'Marcar como lista'}">
+              <svg viewBox="0 0 24 24" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </button>
+          </div>
+          <div class="card-body">
+            <div class="card-title">${t.titulo}</div>
+            ${t.desc ? `<div class="card-desc">${t.desc}</div>` : ''}
+          </div>
+          <div class="card-actions">
+            <button class="act-btn" onclick="openEdit('${t.id}')" title="Editar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            </button>
+            <button class="act-btn del" onclick="deleteTask('${t.id}')" title="Eliminar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="card-meta">
+          ${t.materia ? `<span class="badge b-materia">${t.materia}</span>` : ''}
+          ${fechaBadge(t)}
+        </div>
+        ${!t.done ? `<div class="done-btn-wrap"><button class="done-confirm-btn" onclick="toggleDone('${t.id}')">✅ ¡Marcar como lista!</button></div>` : ''}
+      </div>`;
+    }).join('');
+  }
+
+  function setFilter(f, btn) {
+    filter = f;
+    document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  }
+
+  function toggleDone(id) {
+    const t = tasks.find(t => t.id === id);
+    if (!t) return;
+    t.done = !t.done;
+    save(); render();
+    showToast(t.done ? '✅ ¡Tarea completada! ¡Muy bien!' : '↩️ Tarea marcada como pendiente');
+  }
+
+  function deleteTask(id) {
+    const t = tasks.find(t => t.id === id);
+    if (!t) return;
+    if (!confirm(`¿Seguro que quieres borrar "${t.titulo}"?`)) return;
+    tasks = tasks.filter(t => t.id !== id);
+    save(); render();
+    showToast('🗑️ Tarea eliminada');
+  }
+
+  function openModal() {
+    editId = null;
+    document.getElementById('modal-h').textContent = '✨ Nueva tarea';
+    document.getElementById('inp-titulo').value = '';
+    document.getElementById('inp-materia').value = '';
+    document.getElementById('inp-desc').value = '';
+    document.getElementById('inp-fecha').value = '';
+    clearErrors();
+    document.getElementById('overlay').classList.add('open');
+    setTimeout(() => document.getElementById('inp-titulo').focus(), 100);
+  }
+
+  function openEdit(id) {
+    const t = tasks.find(t => t.id === id);
+    if (!t) return;
+    editId = id;
+    document.getElementById('modal-h').textContent = '✏️ Editar tarea';
+    document.getElementById('inp-titulo').value = t.titulo;
+    document.getElementById('inp-materia').value = t.materia || '';
+    document.getElementById('inp-desc').value = t.desc || '';
+    document.getElementById('inp-fecha').value = t.fecha || '';
+    clearErrors();
+    document.getElementById('overlay').classList.add('open');
+    setTimeout(() => document.getElementById('inp-titulo').focus(), 100);
+  }
+
+  function closeModal() {
+    document.getElementById('overlay').classList.remove('open');
+    editId = null;
+  }
+
+  function bgClose(e) { if (e.target === document.getElementById('overlay')) closeModal(); }
+
+  function clearErrors() {
+    ['f-titulo','f-materia','f-fecha'].forEach(id => document.getElementById(id).classList.remove('has-error'));
+  }
+
+  function saveTask() {
+    const titulo = document.getElementById('inp-titulo').value.trim();
+    const materia = document.getElementById('inp-materia').value;
+    const desc = document.getElementById('inp-desc').value.trim();
+    const fecha = document.getElementById('inp-fecha').value;
+    clearErrors();
+    let ok = true;
+    if (!titulo) { document.getElementById('f-titulo').classList.add('has-error'); ok = false; }
+    if (!materia) { document.getElementById('f-materia').classList.add('has-error'); ok = false; }
+    if (!fecha) { document.getElementById('f-fecha').classList.add('has-error'); ok = false; }
+    if (!ok) return;
+
+    if (editId) {
+      const t = tasks.find(t => t.id === editId);
+      if (t) { t.titulo = titulo; t.materia = materia; t.desc = desc; t.fecha = fecha; }
+      showToast('✏️ ¡Tarea actualizada!');
+    } else {
+      tasks.push({ id: Date.now().toString(), titulo, materia, desc, fecha, done: false });
+      showToast('🎉 ¡Tarea guardada!');
+    }
+    save(); closeModal(); render();
+  }
+
+  let toastTimer;
+  function showToast(msg) {
+    const el = document.getElementById('toast');
+    document.getElementById('toast-msg').textContent = msg;
+    el.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  render();
+</script>
+</body>
+</html>
